@@ -2,7 +2,7 @@ package tface
 
 import "net"
 
-type Tconnection interface {
+type TConnection interface {
 	//启动连接,
 	Start()
 	//停止连接
