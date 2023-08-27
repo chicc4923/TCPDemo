@@ -19,16 +19,18 @@ type Tconnections struct {
 	handleAPI tface.HandleFunc
 	//告知当前连接已经退出/停止的channel
 	Exitchan chan bool
+	//该链接处理的 Router
+	Router tface.TRouter
 }
 
 // 初始化连接的方法
-func NewConnection(conn *net.TCPConn, id uint32, callbackAPI tface.HandleFunc) *Tconnections {
+func NewConnection(conn *net.TCPConn, id uint32, router tface.TRouter) *Tconnections {
 	c := &Tconnections{
-		Conn:      conn,
-		ConnID:    id,
-		handleAPI: callbackAPI,
-		isClosed:  false,
-		Exitchan:  make(chan bool, 1),
+		Conn:     conn,
+		ConnID:   id,
+		Router:   router,
+		isClosed: false,
+		Exitchan: make(chan bool, 1),
 	}
 	return c
 }
@@ -42,16 +44,29 @@ func (c *Tconnections) StartReader() {
 	for {
 		//读取客户端数据到BUFF,目前最大512字节
 		buf := make([]byte, 512)
-		cnt, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("[Error] Reader Can Not Read Data From Buffer:", err)
 			continue
 		}
-		//调用当前连接所绑定的HandleAPI
-		if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
-			fmt.Println("[Error] HandleAPI Run Error :", err)
-			break
+		// 得到一个 Request 对象
+		req := TRequest{
+			conn: c,
+			data: buf,
 		}
+
+		// 调用当前链接所绑定的 Router 2023-08-27
+		go func(request tface.TRequest) {
+			c.Router.PreHandle(request)
+			c.Router.Handler(request)
+			c.Router.PostHandle(request)
+
+		}(&req)
+		//调用当前连接所绑定的HandleAPI
+		//if err := c.handleAPI(c.Conn, buf, cnt); err != nil {
+		//	fmt.Println("[Error] HandleAPI Run Error :", err)
+		//	break
+		//}
 	}
 }
 

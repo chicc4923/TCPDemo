@@ -15,6 +15,8 @@ type TServers struct {
 	Port int
 	//服务器绑定IP版本
 	IPVersion string
+	//给当前的 Server 添加一个 Router, Server 注册的连接对应的处理业务
+	Router tface.TRouter
 }
 
 //实例化接口层的TServer
@@ -49,7 +51,7 @@ func (s *TServers) Start() {
 				continue
 			}
 			//将处理新链接的业务方法和业务进行绑定，得到连接模块。
-			dealConn := NewConnection(conn, cid, CallBack)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 			//启动连接模块
 			go dealConn.Start()
@@ -88,23 +90,30 @@ func (s *TServers) ServerRun() {
 }
 
 // 初始化Server
-func NewServer(name string) tface.TServer {
+func NewServer(name string) *TServers {
 	s := &TServers{
 		Name:      name,
 		IPVersion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8999,
+		Router:    nil,
 	}
 	return s
 }
 
 // 定义当前客户端连接所绑定的业务逻辑(Handle API,以后需要用户自定义)
-func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
-	// 回显业务
-	fmt.Println("[INFO] Connection Handle Back To Clinet...")
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("[ERROR] Write Back Buffer Error:", err)
-		return err
-	}
-	return nil
+//func CallBack(conn *net.TCPConn, data []byte, cnt int) error {
+//	// 回显业务
+//	fmt.Println("[INFO] Connection Handle Back To Clinet...")
+//	if _, err := conn.Write(data[:cnt]); err != nil {
+//		fmt.Println("[ERROR] Write Back Buffer Error:", err)
+//		return err
+//	}
+//	return nil
+//}
+
+// 添加一个路由方法 2023-08-27
+func (s *TServers) AddRouter(router tface.TRouter) {
+	s.Router = router
+	fmt.Println("Add Router Success!")
 }
