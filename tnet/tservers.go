@@ -2,6 +2,7 @@ package tnet
 
 import (
 	"TCPDemo/tface"
+	"TCPDemo/utils"
 	"fmt"
 	"net"
 )
@@ -22,7 +23,8 @@ type TServers struct {
 //实例化接口层的TServer
 
 func (s *TServers) Start() {
-	fmt.Printf("[START] Server Listening at %s:%d", s.IP, s.Port)
+	fmt.Printf("[START] %s Server Listening at %s:%s\n", utils.GlobalObject.Name, utils.GlobalObject.Host, utils.GlobalObject.Host)
+	//fmt.Printf("[START] Server Listening at %s:%d", s.IP, s.Port)
 
 	go func() {
 
@@ -89,13 +91,13 @@ func (s *TServers) ServerRun() {
 	select {}
 }
 
-// 初始化Server
+// NewServer 初始化Server
 func NewServer(name string) *TServers {
 	s := &TServers{
-		Name:      name,
+		Name:      utils.GlobalObject.Name,
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0",
-		Port:      8999,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TCPPort,
 		Router:    nil,
 	}
 	return s
@@ -112,7 +114,7 @@ func NewServer(name string) *TServers {
 //	return nil
 //}
 
-// 添加一个路由方法 2023-08-27
+// AddRouter 添加一个路由方法 2023-08-27
 func (s *TServers) AddRouter(router tface.TRouter) {
 	s.Router = router
 	fmt.Println("Add Router Success!")

@@ -2,6 +2,7 @@ package tnet
 
 import (
 	"TCPDemo/tface"
+	"TCPDemo/utils"
 	"fmt"
 	"net"
 )
@@ -23,7 +24,7 @@ type Tconnections struct {
 	Router tface.TRouter
 }
 
-// 初始化连接的方法
+// NewConnection 初始化连接的方法
 func NewConnection(conn *net.TCPConn, id uint32, router tface.TRouter) *Tconnections {
 	c := &Tconnections{
 		Conn:     conn,
@@ -35,7 +36,7 @@ func NewConnection(conn *net.TCPConn, id uint32, router tface.TRouter) *Tconnect
 	return c
 }
 
-// 连接的读业务
+// StartReader 连接的读业务
 func (c *Tconnections) StartReader() {
 	fmt.Println("[INFO] Reader Goroutine is Running...")
 	defer fmt.Println("[INFO] conID = ", c.ConnID, "Is Stopping", " Reader Will Stop Later,Remote Addr is ", c.GetRemoteAddr().String())
@@ -43,7 +44,7 @@ func (c *Tconnections) StartReader() {
 
 	for {
 		//读取客户端数据到BUFF,目前最大512字节
-		buf := make([]byte, 512)
+		buf := make([]byte, utils.GlobalObject.MaxPackage)
 		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("[Error] Reader Can Not Read Data From Buffer:", err)

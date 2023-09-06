@@ -1,0 +1,6 @@
+{
+  "Name": "TCP Demo V0.4 Server",
+  "Host": "127.0.0.1",
+  "TCPPort": 8989,
+  "MaxConn": 3
+}
